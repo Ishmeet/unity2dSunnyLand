@@ -31,12 +31,6 @@ public class playerMovement : MonoBehaviour
     bool hurt = false;
 
     private void Start() {
-        // if (gem2 == null)
-        //     gem2 = GetComponent<Gem>();
-        // if (gem3 == null)
-        //     gem3 = GetComponent<Gem>();
-        // if (gem4 == null)
-        //     gem4 = GetComponent<Gem>();
   }
     // Update is called once per frame
     void Update() {

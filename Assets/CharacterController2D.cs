@@ -52,7 +52,11 @@ public class CharacterController2D : MonoBehaviour
   public BoolEventFall IsFallingEvent;
   public BoolEventRise IsRisingEvent;
   private bool m_wasCrouching = false;
-
+  public float m_jumpBufferLength = 0.2f;
+  private float m_jumpBufferCounter;
+  public float m_hangTime = 0.2f;
+  private float m_hangCounter;
+  public ParticleSystem Dust;
   private void Awake()
   {
     m_Rigidbody2D = GetComponent<Rigidbody2D>();
@@ -106,8 +110,9 @@ public class CharacterController2D : MonoBehaviour
         m_Hurt = false;
         if (m_JumpDisableCollider != null)
           m_JumpDisableCollider.enabled = false;
-        if (!wasGrounded)
+        if (!wasGrounded) {
           OnLandEvent.Invoke();
+        }
       }
     }
 
@@ -219,14 +224,35 @@ public class CharacterController2D : MonoBehaviour
       }
     }
 
+    // Manage Jump code below
+    
+    // Manage hand time
+    if (m_Grounded)
+      m_hangCounter = m_hangTime;
+    else
+      m_hangCounter -= Time.deltaTime;
+    
+    // Manage jump buffer
+    if (jump) 
+      m_jumpBufferCounter = m_jumpBufferLength;
+    else
+      m_jumpBufferCounter -= Time.deltaTime;
+
     // If the player should jump...
-    if (m_Grounded && jump)
+    if (m_hangCounter > 0f && m_jumpBufferCounter > 0f)
     {
       // Add a vertical force to the player.
       m_Grounded = false;
+      m_jumpBufferCounter = 0f;
       m_Rigidbody2D.AddForce(new Vector2(0f, m_JumpForce));
       if (m_JumpDisableCollider != null)
       m_JumpDisableCollider.enabled = true;
+      CreateDust();
+    }
+
+    // Manage short height jump
+    if (Input.GetButtonUp("Jump") && m_Rigidbody2D.velocity.y > 0) {
+      m_Rigidbody2D.velocity = new Vector2(m_Rigidbody2D.velocity.x, m_Rigidbody2D.velocity.y * 0.5f);
     }
   }
 
@@ -240,5 +266,10 @@ public class CharacterController2D : MonoBehaviour
     Vector3 theScale = transform.localScale;
     theScale.x *= -1;
     transform.localScale = theScale;
+    CreateDust();
+  }
+
+  private void CreateDust() {
+    Dust.Play();
   }
 }
